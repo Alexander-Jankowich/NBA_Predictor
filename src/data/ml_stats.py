@@ -13,6 +13,8 @@ def build_ml_data(df):
         'FTM': 'mean',
         'FTA': 'mean',
         'REB': 'mean',
+        'OREB': 'mean',
+        'DREB': 'mean',
         'AST': 'mean',
         'TOV': 'mean',
         'STL': 'mean',
