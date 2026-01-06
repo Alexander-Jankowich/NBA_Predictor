@@ -1,7 +1,6 @@
 import pandas as pd
 from pathlib import Path
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import Ridge
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, r2_score
 
 THIS_FILE = Path(__file__).resolve()
@@ -27,45 +26,21 @@ X_train, y_train = train[FEATURES], train['win']
 X_val, y_val = val[FEATURES], val['win']
 X_test, y_test = test[FEATURES], test['win']
 
-def train_ridge():
-    model = LinearRegression()
-    model = Ridge(alpha = 10.0)
-    model.fit(X_train,y_train)
+def train_forest():
+    model = RandomForestRegressor(
+    n_estimators=300,
+    max_depth=8,
+    min_samples_leaf=5,
+    random_state=42
+    )
+    preds = model.fit(X_train, y_train)
     val_preds = model.predict(X_val)
     val_mae = mean_absolute_error(y_val, val_preds)
     val_r2 = r2_score(y_val, val_preds)
-
-    print("Ridge Validation MAE:", val_mae)
-    print("Ridge R2:", val_r2)
+    print("Forest Validation MAE:", val_mae)
+    print("Forest R2:", val_r2)
     return model
-
-def train_val():
-    model = LinearRegression()
-    model.fit(X_train,y_train)
-
-    val_preds = model.predict(X_val)
-    val_mae = mean_absolute_error(y_val, val_preds)
-    val_r2 = r2_score(y_val, val_preds)
-
-    print("Validation MAE:", val_mae)
-    print("R2:", val_r2)
-    return model
-
-def test(model):
-    pred = model.predict(X_test)
-    test_mae = mean_absolute_error(y_test, pred)
-    test_r2 = r2_score(y_val, pred)
-    print("Test MAE:", test_mae)
-    print("Test R2:", test_r2)
-
 
 if __name__ == "__main__":
-    model = train_val()
-    test(model)
-    ridge = train_ridge()
-    test(model)
-    print(f"Saved all processed data")
-
-    
-
-
+    train_forest()
+    print("Done")
