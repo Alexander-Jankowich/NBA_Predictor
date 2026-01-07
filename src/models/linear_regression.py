@@ -3,29 +3,10 @@ from pathlib import Path
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, r2_score
+from funcs import load_data, evaluate
 
-THIS_FILE = Path(__file__).resolve()
-PROJECT_ROOT = THIS_FILE.parents[2]
-ML_DATA_DIR = PROJECT_ROOT / "data" / "ml"
-files = sorted(ML_DATA_DIR.glob("team_season_*.parquet"))
-dfs = [pd.read_parquet(f) for f in files]
-df = pd.concat(dfs, ignore_index=True)
-df = df.sort_values(['season', 'TEAM_ID']).reset_index(drop=True)
 
-train = df[df['season'] <= '2018-19']
-val = df[('2019-20' <= df['season']) & (df['season'] <= '2021-22')]
-test = df[df['season'] > '2021-22']
-
-FEATURES = [
-    'points_against', 'point_diff','FTA',
-    'FG_pct', '3P_pct', 'FT_pct',
-    'REB', 'AST', 'TOV', 'STL', 'BLK', 'PF',
-    'FG3A','FGA'
-]
-
-X_train, y_train = train[FEATURES], train['win']
-X_val, y_val = val[FEATURES], val['win']
-X_test, y_test = test[FEATURES], test['win']
+X_train, y_train, X_val, y_val, X_test, y_test = load_data()
 
 def train_ridge():
     model = LinearRegression()
@@ -61,9 +42,9 @@ def test(model):
 
 if __name__ == "__main__":
     model = train_val()
-    test(model)
+    evaluate(model,X_test,y_test)
     ridge = train_ridge()
-    test(model)
+    evaluate(ridge,X_test,y_test)
     print(f"Saved all processed data")
 
     
