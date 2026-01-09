@@ -1,4 +1,5 @@
 from nba_api.stats.endpoints import leaguegamelog
+from nba_api.stats.endpoints import leaguedashteamstats
 import pandas as pd
 import os
 import time
@@ -16,6 +17,24 @@ def fetch_season_log(season):
         season_type_all_star = "Regular Season"
     ).get_data_frames()[0]
     return log
+
+def fetch_team_advanced_stats(season):
+    """
+    Fetch season-level advanced team stats for a given season.
+
+    Returns:
+        pd.DataFrame: One row per team
+    """
+    stats = leaguedashteamstats.LeagueDashTeamStats(
+        season=season,
+        season_type_all_star="Regular Season",
+        per_mode_detailed="Per100Possessions",
+        measure_type_detailed_defense="Advanced",
+        league_id_nullable="00"
+    ).get_data_frames()[0]
+
+    stats["season"] = season
+    return stats
 
 def save_raw_data(season):
     """
@@ -44,8 +63,23 @@ def extract_seasons():
                "2022-23","2023-24","2024-25"]
     for season in seasons:
         save_raw_data(season)
-        time.sleep(1.5)
+        save_advanced_data(season)
     return None
+
+def save_advanced_data(season):
+    """
+    Save season-level advanced team stats to data/raw_advanced
+    """
+    THIS_FILE = Path(__file__).resolve()
+    PROJECT_ROOT = THIS_FILE.parents[2]
+    ADV_DATA_DIR = PROJECT_ROOT / "data" / "raw_advanced"
+    ADV_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    df = fetch_team_advanced_stats(season)
+    output_path = ADV_DATA_DIR / f"team_advanced_{season}.parquet"
+    df.to_parquet(output_path)
+
+    return output_path
 
 if __name__ == "__main__":
     extract_seasons()

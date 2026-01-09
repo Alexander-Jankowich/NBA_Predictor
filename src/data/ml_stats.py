@@ -13,8 +13,6 @@ def build_ml_data(df):
         'FTM': 'mean',
         'FTA': 'mean',
         'REB': 'mean',
-        'OREB': 'mean',
-        'DREB': 'mean',
         'AST': 'mean',
         'TOV': 'mean',
         'STL': 'mean',
@@ -38,11 +36,42 @@ def save_data(season):
     df = pd.read_parquet(processed_file)
     df['season'] = season
     team_season_df = build_ml_data(df)
+
+    team_season_df = merge_advanced_stats(
+        team_season_df,
+        season,
+        PROJECT_ROOT
+    )
     
     output_path = ML_DATA_DIR / f"team_season_{season}.parquet"
     team_season_df.to_parquet(output_path)
 
     return output_path
+
+def merge_advanced_stats(team_season_df, season, project_root):
+    ADV_DATA_DIR = project_root / "data" / "raw_advanced"
+    adv_file = ADV_DATA_DIR / f"team_advanced_{season}.parquet"
+
+    adv_df = pd.read_parquet(adv_file)
+    adv_df['season'] = season
+
+    keep_cols = [
+        'TEAM_ID', 'season','E_OFF_RATING', 'E_DEF_RATING',
+        'OFF_RATING', 'DEF_RATING', 'NET_RATING',
+        'PACE', 'TS_PCT', 'EFG_PCT',
+        'TOV_PCT', 'OREB_PCT', 'DREB_PCT', 'REB_PCT',
+        'AST_PCT', 'FTA_RATE'
+    ]
+    keep_cols = [c for c in keep_cols if c in adv_df.columns]
+    adv_df = adv_df[keep_cols]
+
+    merged = team_season_df.merge(
+        adv_df,
+        on=['TEAM_ID', 'season'],
+        how='left'
+    )
+
+    return merged
 
 def process_seasons():
     seasons = ["2010-11", "2011-12", "2012-13", 
