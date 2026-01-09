@@ -17,26 +17,11 @@ def load_data():
     test = df[df['season'] > '2021-22']
 
     FEATURES = [
-    # Scoring
-    'PTS', 'points_against', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA',
-    
-    # Team box-score stats
-    'REB', 'AST', 'TOV', 'STL', 'BLK', 'PF',
-    
-    # Efficiency percentages
-    'FG_pct', '3P_pct', 'FT_pct', 
-    
-    # Pace
-    'PACE',
-    
-    # Rebounding rates
-    'OREB_PCT', 'DREB_PCT', 'REB_PCT',
-    
-    # Assists
-    'AST_PCT'
+        'points_against','FTA',
+        'FG_pct', '3P_pct', 'FT_pct',
+        'REB', 'AST', 'TOV', 'STL', 'BLK', 'PF',
+        'FG3A','FGA'
     ]
-
-
 
     X_train, y_train = train[FEATURES], train['win']
     X_val, y_val = val[FEATURES], val['win']
