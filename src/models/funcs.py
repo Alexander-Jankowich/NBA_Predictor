@@ -20,7 +20,7 @@ def load_data():
         'points_against','FTA',
         'FG_pct', '3P_pct', 'FT_pct',
         'REB', 'AST', 'TOV', 'STL', 'BLK', 'PF',
-        'FG3A','FGA'
+        'FG3A','FGA','PACE'
     ]
 
     X_train, y_train = train[FEATURES], train['win']
@@ -28,6 +28,28 @@ def load_data():
     X_test, y_test = test[FEATURES], test['win']
 
     return X_train, y_train, X_val, y_val, X_test, y_test
+
+def load_advanced():
+    files = sorted(ML_DATA_DIR.glob("team_season_*.parquet"))
+    dfs = [pd.read_parquet(f) for f in files]
+    df = pd.concat(dfs, ignore_index=True)
+    df = df.sort_values(['season', 'TEAM_ID']).reset_index(drop=True)
+
+    train = df[df['season'] <= '2018-19']
+    val = df[('2019-20' <= df['season']) & (df['season'] <= '2021-22')]
+    test = df[df['season'] > '2021-22']
+
+    FEATURES = [
+       'E_OFF_RATING','E_DEF_RATING','PACE','REB_PCT', 'AST_PCT','TS_PCT','FG_pct',
+       '3P_pct','FT_pct'
+    ]
+
+    X_train, y_train = train[FEATURES], train['win']
+    X_val, y_val = val[FEATURES], val['win']
+    X_test, y_test = test[FEATURES], test['win']
+
+    return X_train, y_train, X_val, y_val, X_test, y_test
+
 
 def evaluate(model, X, y):
     preds = model.predict(X)
