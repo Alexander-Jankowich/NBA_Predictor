@@ -55,23 +55,30 @@ def merge_advanced_stats(team_season_df, season, project_root):
     adv_df = pd.read_parquet(adv_file)
     adv_df['season'] = season
 
+    # Enforce exactly one row per team per season
+    adv_df = adv_df.drop_duplicates(subset=['TEAM_ID', 'season'])
+
     keep_cols = [
-        'TEAM_ID', 'season','E_OFF_RATING', 'E_DEF_RATING',
+        'TEAM_ID', 'season', 'TEAM_NAME',
+        'E_OFF_RATING', 'E_DEF_RATING',
         'OFF_RATING', 'DEF_RATING', 'NET_RATING',
         'PACE', 'TS_PCT', 'EFG_PCT',
         'TOV_PCT', 'OREB_PCT', 'DREB_PCT', 'REB_PCT',
         'AST_PCT', 'FTA_RATE'
     ]
+
     keep_cols = [c for c in keep_cols if c in adv_df.columns]
     adv_df = adv_df[keep_cols]
 
     merged = team_season_df.merge(
         adv_df,
         on=['TEAM_ID', 'season'],
-        how='left'
+        how='left',
+        validate='one_to_one'  # 👈 catches bugs early
     )
 
     return merged
+
 
 def process_seasons():
     seasons = ["2010-11", "2011-12", "2012-13", 
